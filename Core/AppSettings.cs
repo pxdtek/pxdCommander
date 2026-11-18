@@ -88,6 +88,10 @@ public sealed class AppSettings
     public string? SkippedUpdate { get; set; }
     /// <summary>Command for "Open terminal here"; empty = Windows Terminal, then PowerShell.</summary>
     public string TerminalCommand { get; set; } = "";
+    /// <summary>See-through amount of the app's windows, 50–100 % (100 = solid).</summary>
+    public int WindowOpacity { get; set; } = 100;
+    /// <summary>The Settings page last looked at.</summary>
+    public string SettingsPage { get; set; } = "Files";
 
     // Places
     public List<string> Favorites { get; set; } = [];

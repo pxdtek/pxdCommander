@@ -30,6 +30,7 @@ public sealed class TerminalWindow : Window
         Height = 460;
         WindowStartupLocation = owner is null ? WindowStartupLocation.CenterScreen : WindowStartupLocation.CenterOwner;
         WindowChrome.RememberPlacement(this, () => AppSettings.Current.TerminalWindow, p => AppSettings.Current.TerminalWindow = p);
+        WindowOpacity.Track(this);
 
         var brand = new StackPanel
         {

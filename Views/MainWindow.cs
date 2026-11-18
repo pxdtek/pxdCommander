@@ -46,6 +46,7 @@ public sealed partial class MainWindow : Window, IAppHost
         MinWidth = 760;
         MinHeight = 480;
         var s = AppSettings.Current;
+        WindowOpacity.Track(this);
         // The first window comes back where it was left (kept up to date as it moves, so it survives any exit).
         if (_primary) WindowChrome.RememberPlacement(this, () => AppSettings.Current.Window, p => AppSettings.Current.Window = p);
         else

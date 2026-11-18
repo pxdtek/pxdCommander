@@ -3,6 +3,13 @@
 Internal log of what each version added. Not shown in the app yet.
 Bump `<Version>` in `pxdCommander.csproj` for every release, and add an entry here.
 
+## 1.4.5 (2026-11-17)
+- Settings is a list of pages on the left (Files, Look, Behaviour, Windows, About) with the chosen page on the right,
+  grouped under small headings, instead of one long list. It reopens on the page last looked at. About shows the
+  version, "Check for updates", a "Check now" button and where your data is kept.
+- Window opacity: Settings > Look > "Window opacity" (50–100 %) makes the main window and popped-out terminals
+  see-through, live as the slider moves. The image viewer stays solid.
+
 ## 1.4.4 (2026-11-17)
 - Default file manager: Settings > Behaviour > "Default file manager" (or the command palette's "Default file manager
   (on / off)") makes folders and drives opened from the desktop, shortcuts, Run, other apps and Win+E open in pxd
