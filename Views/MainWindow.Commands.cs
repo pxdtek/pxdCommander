@@ -147,6 +147,14 @@ public sealed partial class MainWindow
         Add("Change the accent colour…", "palette", null, () => _ = SettingsView.ShowAsync(ApplySettings));
         Add("Settings", "settings", "Ctrl+OemComma", () => _ = SettingsView.ShowAsync(ApplySettings), true);
         Add("Check for updates", "download", null, () => _ = UpdatePrompt.CheckNowAsync(this));
+        if (OperatingSystem.IsWindows())
+            Add("Default file manager (on / off)", "folder", null, () => Try(() =>
+            {
+                var on = !DefaultFileManager.IsSet;
+                if (on) DefaultFileManager.Set(Environment.ProcessPath!);
+                else DefaultFileManager.Unset();
+                Toasts.Show(on ? "Folders, drives and Win+E now open in pxd Commander." : "Folders and drives open in Explorer again.");
+            }));
         Add("Keyboard shortcuts", "command", "F1", () => ShowGoAnywhere(">"), true);
     }
 

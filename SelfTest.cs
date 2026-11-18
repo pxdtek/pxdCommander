@@ -107,6 +107,41 @@ internal static class SelfTest
                     exe = Installer.InstallAsync(newFolder, desktop: false, folderMenu: false, _ => { }).GetAwaiter().GetResult();
                     Check(File.Exists(exe) && !Installer.HasDesktopShortcut && !Installer.HasFolderMenu, "reinstall without desktop shortcut / folder menu");
 
+                    // ---- default file manager: folders, drives and Win+E, with the earlier defaults put back ----
+                    string? ShellDefault(string k) { using var key = hive.OpenSubKey(k); return key?.GetValue("") as string; }
+                    string? Value(string k, string name = "") { using var key = hive.OpenSubKey(k); return key?.GetValue(name) as string; }
+                    using (var k = hive.CreateSubKey(@"Software\Classes\Drive\shell")) k.SetValue("", "someOtherApp");
+                    Check(!DefaultFileManager.IsSet, "default file manager: off at first");
+                    DefaultFileManager.Set(exe);
+                    Check(DefaultFileManager.IsSet && ShellDefault(@"Software\Classes\Directory\shell") == "pxdCommander" &&
+                          ShellDefault(@"Software\Classes\Drive\shell") == "pxdCommander", "default file manager: folders and drives default to pxd Commander");
+                    Check(Value(@"Software\Classes\Directory\shell\pxdCommander\command") == $"\"{exe}\" \"%V\"" &&
+                          Value(@"Software\Classes\Drive\shell\pxdCommander\command") == $"\"{exe}\" \"%V\"", "default file manager: folder and drive commands point at the exe");
+                    Check(Value(DefaultFileManager.WinEKey) == $"\"{exe}\"" && Value(DefaultFileManager.WinEKey, "DelegateExecute") == "",
+                          "default file manager: Win+E runs pxd Commander");
+                    Check(!Installer.HasFolderMenu, "default file manager doesn't count as the folder menu");
+                    exe = Installer.InstallAsync(newFolder, desktop: false, folderMenu: false, _ => { }).GetAwaiter().GetResult();
+                    Check(DefaultFileManager.IsSet && Value(@"Software\Classes\Directory\shell\pxdCommander\command") is not null &&
+                          Value(@"Software\Classes\Drive\shell\pxdCommander\command") is not null && Value(DefaultFileManager.WinEKey) is not null,
+                          "an update with --no-folder-menu keeps the default file manager");
+                    DefaultFileManager.Set(exe);
+                    DefaultFileManager.Unset();
+                    Check(!DefaultFileManager.IsSet && ShellDefault(@"Software\Classes\Directory\shell") is null &&
+                          ShellDefault(@"Software\Classes\Drive\shell") == "someOtherApp", "default file manager off: the earlier defaults are back");
+                    Check(hive.OpenSubKey(DefaultFileManager.WinEKey) is null && hive.OpenSubKey(@"Software\Classes\Directory\shell\pxdCommander") is null &&
+                          hive.OpenSubKey(@"Software\Classes\Drive\shell\pxdCommander") is null, "default file manager off: its entries are gone (no folder menu chosen)");
+                    exe = Installer.InstallAsync(newFolder, desktop: false, folderMenu: true, _ => { }).GetAwaiter().GetResult();
+                    DefaultFileManager.Set(exe);
+                    DefaultFileManager.Unset();
+                    Check(Installer.HasFolderMenu && hive.OpenSubKey(@"Software\Classes\Directory\shell\pxdCommander") is not null,
+                          "default file manager off keeps the folder menu when it was chosen");
+                    DefaultFileManager.Set(exe);
+                    Installer.Uninstall(removeSettings: false);
+                    Check(!DefaultFileManager.IsSet && ShellDefault(@"Software\Classes\Drive\shell") == "someOtherApp" && hive.OpenSubKey(DefaultFileManager.WinEKey) is null,
+                          "uninstall turns the default file manager off");
+                    Check(Program.CleanPathArg("C:\"") == @"C:\" && Program.CleanPathArg(@"D:\Games") == @"D:\Games" && Program.CleanPathArg("\"E:\\x\"") == @"E:\x",
+                          "drive arguments from Windows (C:\") are cleaned up");
+
                     // A former install somewhere the user chose keeps that folder; only the old exe goes.
                     var custom = Path.Combine(root, "Tools");
                     Directory.CreateDirectory(custom);

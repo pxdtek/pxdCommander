@@ -3,6 +3,14 @@
 Internal log of what each version added. Not shown in the app yet.
 Bump `<Version>` in `pxdCommander.csproj` for every release, and add an entry here.
 
+## 1.4.4 (2026-11-17)
+- Default file manager: Settings > Behaviour > "Default file manager" (or the command palette's "Default file manager
+  (on / off)") makes folders and drives opened from the desktop, shortcuts, Run, other apps and Win+E open in pxd
+  Commander. Per user, no admin rights. The folder and drive defaults that were there before are saved and put back
+  when it's switched off (or on uninstall); an update keeps it on. Explorer's own windows and the taskbar's File
+  Explorer button still open Explorer.
+- A drive passed by Windows ("C:\" arrives as `C:"`) opens the drive instead of failing.
+
 ## 1.4.3 (2026-11-13)
 - Updates come from pxdtek.com: release info from pxdtek.com/gh/repos/pxdtek/pxdCommander/releases/latest, the setup
   and its checksum from pxdtek.com/dl/…. GitHub (now github.com/pxdtek/pxdCommander) is only the fallback when

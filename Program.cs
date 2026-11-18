@@ -55,6 +55,7 @@ internal static class Program
             StartupPaths = StartupPaths.Where(p => p != args[afterUpdate + 1]).ToArray();
             if (int.TryParse(args[afterUpdate + 1], out var oldPid)) Installer.WaitForExit(oldPid);
         }
+        StartupPaths = StartupPaths.Select(CleanPathArg).Where(p => p.Length > 0).ToArray();
 
         // Our own taskbar identity: Windows then takes the icon from our window instead of a stale cached copy
         // of the exe's old icon, and groups our windows together.
@@ -119,6 +120,17 @@ internal static class Program
             return;
 
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
+    /// <summary>
+    /// Windows passes a drive as "%V" → "C:\", and the quote after a trailing backslash is read as a literal quote, so it
+    /// arrives as <c>C:"</c>. Drop stray quotes and give a bare drive its backslash back.
+    /// </summary>
+    internal static string CleanPathArg(string arg)
+    {
+        var p = arg.Trim().Trim('"');
+        if (p.Length == 2 && p[1] == ':' && char.IsLetter(p[0])) p += @"\";
+        return p;
     }
 
     [System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]

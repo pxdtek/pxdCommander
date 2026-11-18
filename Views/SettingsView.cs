@@ -91,6 +91,21 @@ public static class SettingsView
                 Section("BEHAVIOUR"),
                 Toggle("Open items with a single click", null, s.SingleClickOpen, v => s.SingleClickOpen = v),
                 Toggle("Open images in the built-in viewer", "Zoom far in, step through the folder and run slideshows. Off: Windows' default app", s.OpenImagesInViewer, v => s.OpenImagesInViewer = v),
+                OperatingSystem.IsWindows()
+                    ? Toggle("Default file manager", "Folders, drives and Win+E open in pxd Commander. Explorer's own windows and its taskbar button still open Explorer. Off puts Explorer back",
+                        DefaultFileManager.IsSet, v =>
+                        {
+                            try
+                            {
+                                if (v) DefaultFileManager.Set(Environment.ProcessPath!);
+                                else DefaultFileManager.Unset();
+                            }
+                            catch (Exception ex)
+                            {
+                                Toasts.Show("Couldn't change the default file manager: " + ex.Message, ToastKind.Error);
+                            }
+                        })
+                    : new Panel(),
                 Toggle("Reopen my tabs at start", null, s.RestoreSession, v => s.RestoreSession = v),
                 Toggle("Check for updates", "Looks for a new version once a day and asks before installing it", s.CheckForUpdates, v => s.CheckForUpdates = v),
                 Row("Terminal command", "{path} is replaced by the folder", terminal),

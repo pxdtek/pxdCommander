@@ -128,6 +128,7 @@ public static class Installer
             }
         }
         else RemoveFolderMenu();
+        DefaultFileManager.Refresh(exe);
 
         Migration.RemoveFormerInstall(folder);
         if (!Testing) SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero); // SHCNE_ASSOCCHANGED: refresh icons and menus
@@ -141,6 +142,7 @@ public static class Installer
         var folder = InstalledFolder ?? Path.GetDirectoryName(Environment.ProcessPath) ?? DefaultFolder;
         TryDelete(StartMenuShortcut);
         TryDelete(DesktopShortcut);
+        DefaultFileManager.Unset();
         RemoveFolderMenu();
         Root.DeleteSubKeyTree(UninstallKey, throwOnMissingSubKey: false);
         Migration.RemoveFormerInstall(folder); // leftovers of the version from before the rename, if any
@@ -174,7 +176,8 @@ public static class Installer
     {
         get
         {
-            using var key = Root.OpenSubKey(MenuKeys[0]);
+            // The background entry: the folder and drive ones are also written by "Default file manager".
+            using var key = Root.OpenSubKey(MenuKeys[1]);
             return key is not null || Migration.FormerFolderMenu;
         }
     }
@@ -215,7 +218,8 @@ public static class Installer
 
     private static void RemoveFolderMenu()
     {
-        foreach (var path in MenuKeys) Root.DeleteSubKeyTree(path, throwOnMissingSubKey: false);
+        foreach (var path in MenuKeys)
+            if (!DefaultFileManager.Keeps(path)) Root.DeleteSubKeyTree(path, throwOnMissingSubKey: false);
     }
 
     private static async Task CloseRunningAsync(string exe)
